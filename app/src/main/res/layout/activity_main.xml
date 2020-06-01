@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:keepScreenOn="true"
+    tools:context=".MainActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/image_constraintlayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- px = dp * (dpi/160), dpi为手机开发人员选项中的最小宽度值 -->
+        <TextureView
+            android:id="@+id/texture_view"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="1dp"
+            android:layout_marginStart="1dp"
+            android:layout_marginTop="1dp"
+            app:layout_constraintDimensionRatio="4:3"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <TextView
+    android:id="@+id/imu_name"
+    android:layout_width="160dp"
+    android:layout_height="wrap_content"
+    android:layout_alignParentEnd="true"
+    android:layout_alignParentTop="true"
+    android:layout_marginTop="6dp"
+    android:text="Detecting IMU data ..." />
+
+    <TextView
+        android:id="@+id/acc_timestamp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/imu_name"
+        android:layout_below="@+id/imu_name"
+        android:text="acc_t: " />
+
+    <TextView
+        android:id="@+id/acc_x"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/acc_timestamp"
+        android:layout_below="@+id/acc_timestamp"
+        android:text="acc_x: " />
+
+    <TextView
+        android:id="@+id/acc_y"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/acc_x"
+        android:layout_below="@+id/acc_x"
+        android:text="acc_y: " />
+
+    <TextView
+        android:id="@+id/acc_z"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/acc_y"
+        android:layout_below="@+id/acc_y"
+        android:text="acc_z: " />
+
+    <TextView
+        android:id="@+id/gyr_timestamp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/acc_z"
+        android:layout_below="@+id/acc_z"
+        android:text="gyr_t: " />
+
+    <TextView
+        android:id="@+id/gyr_x"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/gyr_timestamp"
+        android:layout_below="@+id/gyr_timestamp"
+        android:text="gyr_x: " />
+
+    <TextView
+        android:id="@+id/gyr_y"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/gyr_x"
+        android:layout_below="@+id/gyr_x"
+        android:text="gyr_y: " />
+
+    <TextView
+        android:id="@+id/gyr_z"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/gyr_y"
+        android:layout_below="@+id/gyr_y"
+        android:text="gyr_z: " />
+
+    <TextView
+        android:id="@+id/timediff"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/gyr_z"
+        android:layout_below="@+id/gyr_z"
+        android:text="t_diff: " />
+
+    <Switch
+        android:id="@+id/ar_switch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@id/timediff"
+        android:layout_alignTop="@id/timediff"
+        android:layout_marginTop="24dp"
+        android:text="Show AR"
+        android:textOff="AR"
+        android:textOn="VINS" />
+
+    <Switch
+        android:id="@+id/loop_switch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@id/ar_switch"
+        android:layout_alignTop="@id/ar_switch"
+        android:layout_marginTop="32dp"
+        android:checked="true"
+        android:text="Loop Closure" />
+
+</RelativeLayout>
