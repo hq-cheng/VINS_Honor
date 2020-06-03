@@ -5,7 +5,7 @@ ASensorEventQueue* System::accSensorEventQueue = nullptr;
 ASensorEventQueue* System::gyrSensorEventQueue = nullptr;
 
 System::System() {
-    LOGI("System Constructor");
+    //LOGI("System Constructor");
     this->instance = this;
 }
 System::~System() {
@@ -15,15 +15,16 @@ System::~System() {
 void System::Init() {
     isCapturing = false;
     bStart_backend = true;
-    thd_BackEnd = std::thread( &System::ProcessBackEnd, this );
     bool deviceCheck = SetParameters( DeviceType::Honor20 );
     if ( !deviceCheck ) {
         LOGE( "Device Not Supported!" );
     }
     trackerData[0].readIntrinsicParameter();
+    estimator.setParameter();
+    thd_BackEnd = std::thread( &System::ProcessBackEnd, this );
     ImuStartUpdate();
     isCapturing = true;
-    LOGI( " VINS System Initialized Successfuly!" );
+    LOGI( " VINS System Parameters were Initialized Successfuly!" );
 }
 
 // 对IMU和图像数据进行对齐对其并组合 pair< vector<IMU>, IMG >，返回 vector< pair< vector<IMU>, IMG > >
@@ -40,7 +41,7 @@ std::vector< std::pair< std::vector<ImuConstPtr>, ImgConstPtr > > System::GetMea
         // imu_buf和feature_buf中数据的时间戳从front到back是递增的
 
         // imu_buf队尾处IMU数据时间戳大于feature_buf队首处图像数据，跳过此if语句
-        if ( !(imu_buf.back()->header > feature_buf.front()->header /*+ estimator.td*/) )
+        if ( !(imu_buf.back()->header > feature_buf.front()->header + estimator.td) )
         {
             // imu_buf      : ... t2 t3 t4 t5 t6 t7 (no imu data)
             // feature_buf  :                                   ... t12 -- -- -- -- t17 ...
@@ -51,7 +52,7 @@ std::vector< std::pair< std::vector<ImuConstPtr>, ImgConstPtr > > System::GetMea
         }
 
         // imu_buf队首处IMU数据的时间戳小于feature_buf队首处图像数据，跳过此if语句
-        if ( !(imu_buf.front()->header < feature_buf.front()->header /*+ estimator.td*/) )
+        if ( !(imu_buf.front()->header < feature_buf.front()->header + estimator.td) )
         {
             // imu_buf      :           ... t4 t5 t6 t7 t8 t9 ...
             // feature_buf  :  ... t1 -- -- -- -- t6 ...
@@ -71,7 +72,7 @@ std::vector< std::pair< std::vector<ImuConstPtr>, ImgConstPtr > > System::GetMea
         // 取出imu_buf中所有时间戳小于img_msg的IMU数据，并移出队列
         // 图像数据(img_msg)，对应多组在时间戳内的imu数据,然后塞入measurements
         std::vector<ImuConstPtr> IMUs;
-        while ( imu_buf.front()->header < img_msg->header /*+ estimator.td*/ )
+        while ( imu_buf.front()->header < img_msg->header + estimator.td )
         {
             IMUs.emplace_back(imu_buf.front());
             imu_buf.pop();
@@ -91,7 +92,7 @@ void System::ProcessBackEnd() {
     // 线程循环等待接收对齐好的IMU和图像数据
     while (bStart_backend)
     {
-        LOGI( "Thread thd_BackEnd, Function ProcessBackEnd..." );
+        //LOGI( "Thread thd_BackEnd, Function ProcessBackEnd..." );
         // getMeasurements() 对IMU和图像数据进行对齐对其并组合 vector< pair< vector<IMU>, IMG > >
         // 一帧IMG数据对应多帧IMU数据, 即[i, j]图像时刻中的所有图像和IMU数据, 取对齐好的第j帧图像和[i ,j]帧图像间的所有IMU数据进行组合
         std::vector< std::pair< std::vector<ImuConstPtr>, ImgConstPtr > > measurements;
@@ -103,7 +104,6 @@ void System::ProcessBackEnd() {
         lk.unlock();
 
         m_estimator.lock();
-        LOGI( "IMU & IMG Data Pretreatment in thd_BackEnd Thread!" );
         // 遍历刚刚获取的IMU和图像数据
         for (auto &measurement : measurements)
         {
@@ -113,7 +113,7 @@ void System::ProcessBackEnd() {
             for (auto &imu_msg : measurement.first)
             {
                 double t = imu_msg->header;
-                double img_t = img_msg->header /*+ estimator.td*/;
+                double img_t = img_msg->header + estimator.td;
                 // IMU数据时间戳早于图像数据
                 // 一般仿真数据集中 getMeasurements() 返回的结果是IMU数据时间戳早于图像数据
                 if (t <= img_t)
@@ -131,8 +131,8 @@ void System::ProcessBackEnd() {
                     ry = imu_msg->angular_velocity.y();
                     rz = imu_msg->angular_velocity.z();
                     // 对获取的IMU数据进行处理: 预积分更新, 运动模型更新
-//                    estimator.processIMU(dt, Vector3d(dx, dy, dz), Vector3d(rx, ry, rz));
-                    LOGI( "imu: dt:%f a: %f %f %f w: %f %f %f\n",dt, dx, dy, dz, rx, ry, rz );
+                    estimator.processIMU(dt, Vector3d(dx, dy, dz), Vector3d(rx, ry, rz));
+                    //LOGI( "imu: dt:%f a: %f %f %f w: %f %f %f\n",dt, dx, dy, dz, rx, ry, rz );
 
                 }
                 // IMU数据时间戳晚于图像数据
@@ -155,13 +155,13 @@ void System::ProcessBackEnd() {
                     rx = w1 * rx + w2 * imu_msg->angular_velocity.x();
                     ry = w1 * ry + w2 * imu_msg->angular_velocity.y();
                     rz = w1 * rz + w2 * imu_msg->angular_velocity.z();
-//                    estimator.processIMU(dt_1, Vector3d(dx, dy, dz), Vector3d(rx, ry, rz));
-                    LOGI( "dimu: dt:%f a: %f %f %f w: %f %f %f\n",dt_1, dx, dy, dz, rx, ry, rz );
+                    estimator.processIMU(dt_1, Vector3d(dx, dy, dz), Vector3d(rx, ry, rz));
+                    //LOGI( "dimu: dt:%f a: %f %f %f w: %f %f %f\n",dt_1, dx, dy, dz, rx, ry, rz );
                 }
             }
 
             LOGI( "Processing vision data with stamp %f \n", img_msg->header );
-            std::map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> image;
+            std::map< int, std::vector< std::pair< int, Eigen::Matrix<double, 7, 1> > > > image;
             // 遍历并获取这一帧图像数据中的每一个特征点信息，并存储到map数组 image 中
             for (unsigned int i = 0; i < img_msg->points.size(); i++)
             {
@@ -182,11 +182,19 @@ void System::ProcessBackEnd() {
                 Eigen::Matrix<double, 7, 1> xyz_uv_velocity;
                 xyz_uv_velocity << x, y, z, p_u, p_v, velocity_x, velocity_y;
                 image[feature_id].emplace_back(camera_id,  xyz_uv_velocity);
-                LOGI( "dimg: point_3d: %f %f %f point_2d: %f %f velocity: %f %f \n",x, y, z, p_u, p_v, velocity_x, velocity_y );
+                //LOGI( "dimg: point_3d: %f %f %f point_2d: %f %f velocity: %f %f \n",x, y, z, p_u, p_v, velocity_x, velocity_y );
             }
 
             // 对获取的这一帧图像数据进行处理: VIO初始化, 视觉特征三角化, BA非线性优化
-//            estimator.processImage(image, img_msg->header);
+            estimator.processImage(image, img_msg->header);
+            if ( estimator.solver_flag == Estimator::SolverFlag::NON_LINEAR ) {
+                Vector3d p_wi;
+                Quaterniond q_wi;
+                q_wi = Quaterniond(estimator.Rs[WINDOW_SIZE]);
+                p_wi = estimator.Ps[WINDOW_SIZE];
+                double dStamp = estimator.Headers[WINDOW_SIZE];
+                LOGI( "Timestamp: %f, Optimized location: %f, %f, %f", dStamp, p_wi.x(), p_wi.y(), p_wi.z() );
+            }
         }
         m_estimator.unlock();
 
@@ -246,7 +254,7 @@ void System::ImageStartUpdate(cv::Mat& image, double imgTimestamp, bool isScreen
             PUB_THIS_FRAME = false;
 
         // 单目 读取图像数据并进行特征跟踪处理
-        LOGI( "Start to process image via feature tracker!" );
+        //LOGI( "Start to process image via feature tracker!" );
         cv::cvtColor( image, image, cv::COLOR_BGRA2GRAY );
         trackerData[0].readImage(image, imgTimestamp);
         cv::cvtColor( image, image, cv::COLOR_GRAY2BGRA );
@@ -304,6 +312,16 @@ void System::ImageStartUpdate(cv::Mat& image, double imgTimestamp, bool isScreen
                 con.notify_one();
             }
         }
+
+        if ( SHOW_TRACK ) {
+            // 根据特征点被追踪的次数，显示其颜色，越红表示这个特征点看到的越久，一幅图像要是大部分特征点是蓝色，前端tracker效果很差了，估计要挂了
+            for (unsigned int j = 0; j < trackerData[0].cur_pts.size(); j++)
+            {
+                double len = min( 1.0, 1.0 * trackerData[0].track_cnt[j] / WINDOW_SIZE );
+                cv::circle( image, trackerData[0].cur_pts[j], 2, cv::Scalar(255 * (1 - len), 0, 255 * len), 2 );
+            }
+        }
+
     }
     else {
         LOGI( "Not Caputuring!" );
@@ -350,11 +368,11 @@ int System::ProcessASensorEventsCallback(int fd, int events, void* data) {
     ASensorEvent gyrSensorEvent;
     static double accTimestamp = -1.0;
 
-    LOGI( "Start to Update IMU Data!" );
+    //LOGI( "Start to Update IMU Data!" );
     // Retrieve pending events in sensor event queue
     // Retrieve next available events from the queue to a specified event array
     while ( ASensorEventQueue_getEvents(gyrSensorEventQueue, &gyrSensorEvent, 1) > 0 ) {
-        LOGI( "Retrieve pending events in sensor event queue" );
+        //LOGI( "Retrieve pending events in sensor event queue" );
         assert( gyrSensorEvent.type == ASENSOR_TYPE_GYROSCOPE );
         double gyrTimestamp = gyrSensorEvent.timestamp / 1000000000.0;
         assert( gyrTimestamp > 0  );
@@ -364,24 +382,20 @@ int System::ProcessASensorEventsCallback(int fd, int events, void* data) {
         gyr_msg.angular_velocity << gyrSensorEvent.uncalibrated_gyro.x_uncalib,
                                     gyrSensorEvent.uncalibrated_gyro.y_uncalib,
                                     gyrSensorEvent.uncalibrated_gyro.z_uncalib;
-        LOGI( "Filtering Gyroscope Data!" );
+        //LOGI( "Filtering Gyroscope Data!" );
         if ( instance->gyr_buf.size() == 0 ) {
-            LOGI("Empty Gyrosocpe Interpolation Buffer Should Only Happen Once!");
             instance->gyr_buf.push_back( gyr_msg );
             instance->gyr_buf.push_back( gyr_msg );
             continue;
         }
         else if ( gyr_msg.header <= instance->gyr_buf[1].header ) {
-            LOGI( "Current Gyroscope Data Timestamp is less than gyr_buf[1]" );
             continue;
         }
         else {
-            LOGI( "Update Gyroscope Buffer for Interpolation" );
             instance->gyr_buf[0] = instance->gyr_buf[1];
             instance->gyr_buf[1] = gyr_msg;
         }
 
-        LOGI( "Wait Gyroscope Data!" );
         // wait until gyroscope data is steady
         if ( instance->imu_prepare < 10 ) {
             LOGI( "Wait Until Gyroscope Data is Steady!" );
@@ -413,7 +427,7 @@ int System::ProcessASensorEventsCallback(int fd, int events, void* data) {
         }
 
         // 插值
-        LOGI( "Interpolation Between Gyroscope and Accelerometer" );
+        //LOGI( "Interpolation Between Gyroscope and Accelerometer" );
         std::shared_ptr<IMU_MSG> imu_msg(new IMU_MSG());
         if ( instance->cur_acc->header >= instance->gyr_buf[0].header && instance->cur_acc->header < instance->gyr_buf[1].header ) {
 

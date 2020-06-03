@@ -294,7 +294,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             boolean isScreenRotated = curRotAngle != Surface.ROTATION_90;
 
             // Step3: 使用 NDK 将图像数据传递给 c++ 代码进行图像处理, 并输入给VIO, 再结合 ANativeWindow 显示处理完成之后的图像
-            Log.i( TAG, "Transform Image to C++ VIO Code via NDK Function!" );
+            //Log.i( TAG, "Transform Image to C++ VIO Code via NDK Function!" );
             mNDKHelper.OnImageAvailable( image.getTimestamp(), image.getWidth(), image.getHeight(),
                                         imYPlane.getBuffer(),  isScreenRotated, mSurface );
 

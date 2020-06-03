@@ -5,11 +5,10 @@
 #include <android/native_window_jni.h>
 #include "system.h"
 
-#define LOG_TAG "native-lip.cpp"
-
+#define LOG_TAG_NATIVE "native-lip.cc"
 // debug logging
-#define LOGI(...)  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
-#define LOGE(...)  __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
+#define LOGI(...)  __android_log_print(ANDROID_LOG_INFO, LOG_TAG_NATIVE, __VA_ARGS__)
+#define LOGE(...)  __android_log_print(ANDROID_LOG_ERROR, LOG_TAG_NATIVE, __VA_ARGS__)
 
 using namespace std;
 
@@ -20,7 +19,7 @@ std::unique_ptr<System> pSystem;
 extern "C" JNIEXPORT void JNICALL
 Java_vins_1honor_mono_NDKHelper_VINSInit( JNIEnv* env, jclass obj ) {
     pSystem = std::unique_ptr<System>( new System );
-    LOGI( "Successfully Created VINS System Object!" );
+    //LOGI( "Successfully Created VINS System Object!" );
     // 对整个 VINS 进行初始化, 包括设置相关参数, 开启 IMU 传感器, 开启后端处理线程等
     pSystem->Init();
 }
@@ -69,7 +68,7 @@ Java_vins_1honor_mono_NDKHelper_OnImageAvailable( JNIEnv* env, jclass obj,
     }
     cv::Mat imgRgba( imgHeight, imgWidth, CV_8UC4 );
     cv::cvtColor( imgYUV, imgRgba, cv::COLOR_GRAY2BGRA ); // YUV -> RGBA
-    LOGI( "Start to Update Image via VIO" );
+    //LOGI( "Start to Update Image via VIO" );
     pSystem->ImageStartUpdate( imgRgba, imgHeader, isScreenRotated );
 
     // copy to TextureView surface

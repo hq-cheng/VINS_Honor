@@ -13,6 +13,11 @@
 
 #include "Parameters.h"
 
+#include <android/log.h>
+#define LOG_TAG_TRACK "feature_tracker.cc"
+#define LOGI(...)  __android_log_print(ANDROID_LOG_INFO, LOG_TAG_TRACK, __VA_ARGS__)
+#define LOGE(...)  __android_log_print(ANDROID_LOG_ERROR, LOG_TAG_TRACK, __VA_ARGS__)
+
 using namespace std;
 using namespace camodocal;
 using namespace Eigen;

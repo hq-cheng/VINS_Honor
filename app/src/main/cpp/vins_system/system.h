@@ -5,20 +5,28 @@
 #include <vector>
 #include <set>
 #include <map>
+#include <thread>
+#include <chrono>
+#include <opencv2/core/core.hpp>
+
 #include <jni.h>
 #include <android/log.h>
 #include <android/looper.h>
 #include <android/sensor.h>
 #include <condition_variable>
-#include <thread>
-#include <chrono>
+
 #include "Parameters.h"
 #include "feature_tracker.h"
-#include <opencv2/core/core.hpp>
+#include "estimator.h"
 
-#define LOG_TAG "system.cpp"
-#define LOGI(...)  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
-#define LOGE(...)  __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
+
+#define LOG_TAG_SYSTEM "system.cc"
+#define LOGI(...)  __android_log_print(ANDROID_LOG_INFO, LOG_TAG_SYSTEM, __VA_ARGS__)
+#define LOGE(...)  __android_log_print(ANDROID_LOG_ERROR, LOG_TAG_SYSTEM, __VA_ARGS__)
+
+using namespace std;
+using namespace cv;
+using namespace Eigen;
 
 struct IMU_MSG {
     double header;
@@ -47,7 +55,6 @@ public:
     void ImuStartUpdate();
     void ImuStopUpdate();
     void ImageStartUpdate(cv::Mat& image, double imgTimestamp, bool isScreenRotated);
-    std::vector< std::pair< std::vector<ImuConstPtr>, ImgConstPtr > > GetMeasurements();
     void ProcessBackEnd();
 
 private:
@@ -66,6 +73,7 @@ private:
     std::queue<ImuConstPtr> imu_buf;
 
     // for feature_buf
+    FeatureTracker trackerData[1];
     bool isCapturing;
     bool init_pub = 0;
     bool init_feature = 0;
@@ -85,12 +93,13 @@ private:
     // for back-end
     std::thread thd_BackEnd;
     bool bStart_backend;
-    FeatureTracker trackerData[1];
-
-    int sum_of_wait = 0;
     double current_time = -1;
+    int sum_of_wait = 0;
 
+    // for estimator
+    Estimator estimator;
 
+    std::vector< std::pair< std::vector<ImuConstPtr>, ImgConstPtr > > GetMeasurements();
 };
 
 #endif //VINS_HONOR_SYSTEM_H

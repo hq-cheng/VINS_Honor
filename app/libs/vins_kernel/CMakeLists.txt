@@ -9,11 +9,22 @@ add_subdirectory(thirdparty)
 
 set(
     VINS_SRCS
+    utility.cc
     Parameters.cc
     Camera.cc
     CameraFactory.cc
     PinholeCamera.cc
     feature_tracker.cc
+    estimator.cc
+    feature_manager.cc
+    solve_5pts.cc
+    initial_sfm.cc
+    initial_aligment.cc
+    initial_ex_rotation.cc
+    pose_local_parameterization.cc
+    projection_factor.cc
+    projection_td_factor.cc
+    marginalization_factor.cc
 )
 
 set(TARGET_NAME vins_kernel)
@@ -25,5 +36,7 @@ target_include_directories(${TARGET_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(
     ${TARGET_NAME}
     eigen_lib
+    ceres_lib
+    log
     ${OpenCV_LIBS}
 )
