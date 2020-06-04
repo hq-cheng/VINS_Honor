@@ -63,6 +63,12 @@ extern double GYR_N, GYR_W;
 #define ROLLING_SHUTTER 0
 #define TR ((double)0.0)
 
+// Visualization related parameters
+#define RIC_y ((double)0.0)
+#define RIC_p ((double)0.0)
+#define RIC_r ((double)180.0)
+#define C_PI 3.1415926
+
 // Integration related parameters
 enum SIZE_PARAMETERIZATION
 {

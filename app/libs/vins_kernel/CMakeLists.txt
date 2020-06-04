@@ -9,6 +9,7 @@ add_subdirectory(thirdparty)
 
 set(
     VINS_SRCS
+    draw_result.cc
     utility.cc
     Parameters.cc
     Camera.cc

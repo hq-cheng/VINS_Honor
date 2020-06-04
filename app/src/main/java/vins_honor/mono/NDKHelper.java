@@ -2,6 +2,7 @@ package vins_honor.mono;
 
 import android.view.Surface;
 import java.nio.ByteBuffer;
+import android.widget.TextView;
 
 public class NDKHelper {
 
@@ -21,4 +22,7 @@ public class NDKHelper {
     // Camera Processing
     public static native void OnImageAvailable( long imgTimestamp, int imgWidth, int imgHeight,
                                                 ByteBuffer imgBuffer, boolean isScreenRotated, Surface surface );
+
+    // Update UI Information
+    public static native void UpdateUIInfo( TextView positionXText, TextView positionYText, TextView positionZText );
 }

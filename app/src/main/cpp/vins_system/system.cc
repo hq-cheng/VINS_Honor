@@ -193,8 +193,11 @@ void System::ProcessBackEnd() {
                 q_wi = Quaterniond(estimator.Rs[WINDOW_SIZE]);
                 p_wi = estimator.Ps[WINDOW_SIZE];
                 double dStamp = estimator.Headers[WINDOW_SIZE];
-                LOGI( "Timestamp: %f, Optimized location: %f, %f, %f", dStamp, p_wi.x(), p_wi.y(), p_wi.z() );
+                //LOGI( "Timestamp: %f, Optimized location: %f, %f, %f", dStamp, p_wi.x(), p_wi.y(), p_wi.z() );
             }
+
+            // Update Android UI Information
+            ShowInputView();
         }
         m_estimator.unlock();
 
@@ -321,6 +324,25 @@ void System::ImageStartUpdate(cv::Mat& image, double imgTimestamp, bool isScreen
                 cv::circle( image, trackerData[0].cur_pts[j], 2, cv::Scalar(255 * (1 - len), 0, 255 * len), 2 );
             }
         }
+
+        // 绘制并显示轨迹
+//        if ( estimator.solver_flag == Estimator::SolverFlag::NON_LINEAR ) {
+            estimator.drawresult.pose.clear();
+            estimator.drawresult.pose = estimator.visual_poses;
+            estimator.drawresult.origin_w[0] = (float)estimator.correct_Ps[0][0];
+            estimator.drawresult.origin_w[1] = (float)estimator.correct_Ps[0][1];
+            //LOGI( "Start to draw trajectory!" );
+            estimator.drawresult.Reprojection( estimator.image_show, estimator.visual_point_cloud, estimator.correct_Rs, estimator.correct_Ps );
+            //LOGI( "Start to show trajectory!" );
+            cv::Mat tmp2 = estimator.image_show;
+            cv::Mat down_origin_image;
+            cv::resize(image, down_origin_image, cv::Size(200, 150)); // 宽 200, 高 150
+            cv::cvtColor(down_origin_image, down_origin_image, cv::COLOR_BGRA2BGR);
+            cv::Mat imageROI;
+            imageROI = tmp2( cv::Rect( 10, ROW - down_origin_image.rows- 10, down_origin_image.cols, down_origin_image.rows ) );
+            down_origin_image.copyTo(imageROI);
+            cv::cvtColor(tmp2, image, cv::COLOR_BGR2BGRA);
+//        }
 
     }
     else {
@@ -460,5 +482,30 @@ void System::ImuStopUpdate() {
         ASensorEventQueue_disableSensor(accSensorEventQueue, accelerometer);
         ASensorEventQueue_disableSensor(gyrSensorEventQueue, gyroscope);
     }
+}
+
+void System::ShowInputView() {
+    std::ostringstream oss;
+
+    m_ui.lock();
+
+    float x_view = (float)estimator.correct_Ps[0][0];
+    float y_view = (float)estimator.correct_Ps[0][1];
+    float z_view = (float)estimator.correct_Ps[0][2];
+
+    LOGI( "XYZ: %f, %f, %f", x_view, y_view, z_view );
+    oss << "X: "<< x_view;
+    tvXText = oss.str();
+    oss.str(""); oss.clear();
+
+    oss << "Y: "<< y_view;
+    tvYText = oss.str();
+    oss.str(""); oss.clear();
+
+    oss << "Z: "<< z_view;
+    tvZText = oss.str();
+    oss.str(""); oss.clear();
+
+    m_ui.unlock();
 }
 

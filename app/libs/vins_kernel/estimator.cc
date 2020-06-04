@@ -1,6 +1,6 @@
 #include "estimator.h"
 
-Estimator::Estimator(): f_manager{Rs}
+Estimator::Estimator(): f_manager{Rs}, drawresult{0.0, 0.0, 0.0, 0.0, 0.0, 7.0}
 {
     LOGI("init begins");
     clearState();
@@ -231,7 +231,17 @@ void Estimator::processImage(const map<int, vector<pair<int, Eigen::Matrix<doubl
                 last_P = Ps[WINDOW_SIZE];
                 last_R0 = Rs[0];
                 last_P0 = Ps[0];
-                
+
+                // for Visualization
+
+                visual_poses.push_back( last_P.cast<float>() );
+                for(int i = 0; i < WINDOW_SIZE; i++)
+                {
+                    Vector3d correct_p = Ps[i];
+                    Matrix3d correct_r = Rs[i];
+                    correct_Ps[i] = correct_p.cast<float>();
+                    correct_Rs[i] = correct_r.cast<float>();
+                }
             }
             // VIO初始化失败，执行滑窗操作，获取新的关键帧，准备再一次初始化，直至成功
             // initialStructure()失败时返回的 marginalization_flag 可以是 MARGIN_OLD, 也可能是 MARGIN_SECOND_NEW
@@ -274,6 +284,16 @@ void Estimator::processImage(const map<int, vector<pair<int, Eigen::Matrix<doubl
         last_P = Ps[WINDOW_SIZE];
         last_R0 = Rs[0];
         last_P0 = Ps[0];
+
+        // for Visualization
+        visual_poses.push_back( last_P.cast<float>() );
+        for(int i = 0; i < WINDOW_SIZE; i++)
+        {
+            Vector3d correct_p = Ps[i];
+            Matrix3d correct_r = Rs[i];
+            correct_Ps[i] = correct_p.cast<float>();
+            correct_Rs[i] = correct_r.cast<float>();
+        }
     }
 }
 
@@ -1249,6 +1269,25 @@ void Estimator::slideWindowNew()
 void Estimator::slideWindowOld()
 {
     sum_of_back++;
+
+    // for Visualization
+    visual_point_cloud.clear();
+    for (auto &it_per_id : f_manager.feature)
+    {
+        it_per_id.used_num = it_per_id.feature_per_frame.size();
+        if (!(it_per_id.used_num >= 2 && it_per_id.start_frame < WINDOW_SIZE - 2))
+            continue;
+
+        if (it_per_id.start_frame == 0 && it_per_id.feature_per_frame.size() <= 2
+            &&it_per_id.solve_flag == 1 )
+        {
+            int imu_i = it_per_id.start_frame;
+            Vector3d pts_i = it_per_id.feature_per_frame[0].point * it_per_id.estimated_depth;
+            Vector3d tmp = Rs[imu_i] * (ric[0] * pts_i + tic[0]) + Ps[imu_i];
+            visual_point_cloud.push_back( tmp.cast<float>() );
+        }
+    }
+    // for Visualization
 
     bool shift_depth = solver_flag == NON_LINEAR ? true : false;
     if (shift_depth)

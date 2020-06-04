@@ -19,7 +19,6 @@
 #include "feature_tracker.h"
 #include "estimator.h"
 
-
 #define LOG_TAG_SYSTEM "system.cc"
 #define LOGI(...)  __android_log_print(ANDROID_LOG_INFO, LOG_TAG_SYSTEM, __VA_ARGS__)
 #define LOGE(...)  __android_log_print(ANDROID_LOG_ERROR, LOG_TAG_SYSTEM, __VA_ARGS__)
@@ -56,6 +55,14 @@ public:
     void ImuStopUpdate();
     void ImageStartUpdate(cv::Mat& image, double imgTimestamp, bool isScreenRotated);
     void ProcessBackEnd();
+
+public:
+    // for Android UI Information Update
+    std::mutex m_ui;
+    std::string tvXText;
+    std::string tvYText;
+    std::string tvZText;
+    void ShowInputView();
 
 private:
     static System* instance;

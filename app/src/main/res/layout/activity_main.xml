@@ -30,92 +30,44 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <TextView
-    android:id="@+id/imu_name"
+    android:id="@+id/position_tag"
     android:layout_width="160dp"
     android:layout_height="wrap_content"
     android:layout_alignParentEnd="true"
     android:layout_alignParentTop="true"
     android:layout_marginTop="6dp"
-    android:text="Detecting IMU data ..." />
+    android:text="Real-time location:" />
 
     <TextView
-        android:id="@+id/acc_timestamp"
+        android:id="@+id/position_x"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/imu_name"
-        android:layout_below="@+id/imu_name"
-        android:text="acc_t: " />
+        android:layout_alignStart="@+id/position_tag"
+        android:layout_below="@+id/position_tag"
+        android:text="X:________" />
 
     <TextView
-        android:id="@+id/acc_x"
+        android:id="@+id/position_y"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/acc_timestamp"
-        android:layout_below="@+id/acc_timestamp"
-        android:text="acc_x: " />
+        android:layout_alignStart="@+id/position_x"
+        android:layout_below="@+id/position_x"
+        android:text="Y:________" />
 
     <TextView
-        android:id="@+id/acc_y"
+        android:id="@+id/position_z"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/acc_x"
-        android:layout_below="@+id/acc_x"
-        android:text="acc_y: " />
-
-    <TextView
-        android:id="@+id/acc_z"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/acc_y"
-        android:layout_below="@+id/acc_y"
-        android:text="acc_z: " />
-
-    <TextView
-        android:id="@+id/gyr_timestamp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/acc_z"
-        android:layout_below="@+id/acc_z"
-        android:text="gyr_t: " />
-
-    <TextView
-        android:id="@+id/gyr_x"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/gyr_timestamp"
-        android:layout_below="@+id/gyr_timestamp"
-        android:text="gyr_x: " />
-
-    <TextView
-        android:id="@+id/gyr_y"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/gyr_x"
-        android:layout_below="@+id/gyr_x"
-        android:text="gyr_y: " />
-
-    <TextView
-        android:id="@+id/gyr_z"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/gyr_y"
-        android:layout_below="@+id/gyr_y"
-        android:text="gyr_z: " />
-
-    <TextView
-        android:id="@+id/timediff"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/gyr_z"
-        android:layout_below="@+id/gyr_z"
-        android:text="t_diff: " />
+        android:layout_alignStart="@+id/position_y"
+        android:layout_below="@+id/position_y"
+        android:text="Z:________" />
 
     <Switch
         android:id="@+id/ar_switch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@id/timediff"
-        android:layout_alignTop="@id/timediff"
+        android:layout_alignStart="@id/position_z"
+        android:layout_alignTop="@id/position_z"
         android:layout_marginTop="24dp"
         android:text="Show AR"
         android:textOff="AR"

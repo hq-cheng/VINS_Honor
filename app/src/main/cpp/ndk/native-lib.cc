@@ -32,8 +32,8 @@ Java_vins_1honor_mono_NDKHelper_VINSRelease( JNIEnv *env, jclass obj ) {
 
 extern "C" JNIEXPORT void JNICALL
 Java_vins_1honor_mono_NDKHelper_OnImageAvailable( JNIEnv* env, jclass obj,
-                                                  jlong imgTimestamp, jint imgWidth, jint imgHeight,
-                                                  jobject imgBuffer, jboolean isScreenRotated, jobject surface)
+        jlong imgTimestamp, jint imgWidth, jint imgHeight,
+        jobject imgBuffer, jboolean isScreenRotated, jobject surface)
 {
     // 创建 ANativeWindow 实例用于显示VIO处理之后的图像
     // Return the ANativeWindow associated with a Java Surface object for interacting with it through native code
@@ -89,3 +89,22 @@ Java_vins_1honor_mono_NDKHelper_OnImageAvailable( JNIEnv* env, jclass obj,
     // Remove a reference that was previously acquired with ANativeWindow_acquire()
     ANativeWindow_release(window);
 }
+
+extern "C" JNIEXPORT void JNICALL
+Java_vins_1honor_mono_NDKHelper_UpdateUIInfo( JNIEnv* env, jclass obj,
+        jobject positionXText, jobject positionYText, jobject positionZText )
+{
+    // Get the method handles
+    jclass tvClass = env->FindClass("android/widget/TextView");
+    jmethodID setTextID = env->GetMethodID(tvClass, "setText", "(Ljava/lang/CharSequence;)V");
+
+    pSystem->m_ui.lock();
+    if( pSystem->tvXText.empty() == false ) {
+        env->CallVoidMethod(positionXText, setTextID, env->NewStringUTF(pSystem->tvXText.c_str()));
+        env->CallVoidMethod(positionYText, setTextID, env->NewStringUTF(pSystem->tvYText.c_str()));
+        env->CallVoidMethod(positionZText, setTextID, env->NewStringUTF(pSystem->tvZText.c_str()));
+    }
+    pSystem->m_ui.unlock();
+}
+
+

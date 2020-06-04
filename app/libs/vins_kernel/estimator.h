@@ -1,5 +1,6 @@
 #pragma once
 
+#include "draw_result.h"
 #include "Parameters.h"
 #include "utility.h"
 #include "feature_manager.h"
@@ -142,4 +143,12 @@ class Estimator
     Vector3d relo_relative_t;
     Quaterniond relo_relative_q;
     double relo_relative_yaw;
+
+    // for Visualization
+    DrawResult drawresult;
+    cv::Mat image_show;
+    std::vector<Eigen::Vector3f> visual_poses;
+    Vector3f correct_Ps[WINDOW_SIZE];
+    Matrix3f correct_Rs[WINDOW_SIZE];
+    vector<Vector3f> visual_point_cloud;
 };

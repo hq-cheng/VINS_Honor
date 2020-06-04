@@ -56,15 +56,9 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
     // UI widgets
     private TextureView mTextureView;
-    private TextView maccXText;
-    private TextView maccYText;
-    private TextView maccZText;
-    private TextView maccTimeStampText;
-    private TextView mgyrXText;
-    private TextView mgyrYText;
-    private TextView mgyrZText;
-    private TextView mgyrTimeStampText;
-    private TextView mTimeStampDiffText;
+    private TextView mPositionXText;
+    private TextView mPositionYText;
+    private TextView mPositionZText;
 
     // camera2 related
     private CameraDevice mCamera;
@@ -101,15 +95,9 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         mTextureView.setSurfaceTextureListener( this );
 
         // IMU related widgets
-        maccXText = findViewById( R.id.acc_x );
-        maccYText = findViewById( R.id.acc_y );
-        maccZText = findViewById( R.id.acc_z );
-        maccTimeStampText = findViewById( R.id.acc_timestamp );
-        mgyrXText = findViewById( R.id.gyr_x );
-        mgyrYText = findViewById( R.id.gyr_y );
-        mgyrZText = findViewById( R.id.gyr_z );
-        mgyrTimeStampText = findViewById( R.id.gyr_timestamp );
-        mTimeStampDiffText = findViewById( R.id.timediff );
+        mPositionXText = findViewById( R.id.position_x );
+        mPositionYText = findViewById( R.id.position_y );
+        mPositionZText = findViewById( R.id.position_z );
 
         // 初始化整个 VINS 并开启 IMU 传感器
         mNDKHelper = new NDKHelper();
@@ -297,6 +285,13 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             //Log.i( TAG, "Transform Image to C++ VIO Code via NDK Function!" );
             mNDKHelper.OnImageAvailable( image.getTimestamp(), image.getWidth(), image.getHeight(),
                                         imYPlane.getBuffer(),  isScreenRotated, mSurface );
+
+            // 在主线程(UI线程)中更新UI信息
+            runOnUiThread(new Runnable() {
+                public void run() {
+                    mNDKHelper.UpdateUIInfo( mPositionXText, mPositionYText, mPositionZText );
+                }
+            });
 
             // Step4: 释放这一帧图像数据
             image.close();
